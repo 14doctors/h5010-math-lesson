@@ -12,6 +12,7 @@ const STEPS = [
   { title: "Pay Timeline", icon: "📅" },
   { title: "Who Earns More?", icon: "⚖️" },
   { title: "The Discovery", icon: "💡" },
+  { title: "Two Kinds", icon: "📊" },
   { title: "Big Picture", icon: "🌍" },
 ];
 
@@ -101,6 +102,7 @@ function S0() {
         ["🎲", "How a variable changes what people earn"],
         ["⚖️", "Compare two formulas with inequalities"],
         ["💡", "What it means when algebra gives an impossible answer"],
+        ["📊", "Two different kinds of math functions — and which is fairer"],
       ].map(([icon, text], i) => (
         <div key={i} style={{ display: "flex", gap: "10px", padding: "8px 0", borderBottom: i < 4 ? "1px solid #f3f4f6" : "none" }}>
           <span style={{ fontSize: "20px" }}>{icon}</span>
@@ -368,6 +370,135 @@ function S7() {
 }
 
 function S8() {
+  const [bills, setBills] = useState(75);
+  const C = bills / 100;
+  const isCompliant = bills === 100;
+
+  const g3Guaranteed = SAL * 0.33 * 0.50;
+  const g3Holdback   = SAL * 0.33 * 0.50 * C;
+  const g3Total      = g3Guaranteed + g3Holdback;
+
+  const g4Guaranteed = SAL * 0.33 * 0.50;
+  const g4Holdback   = isCompliant ? SAL * 0.33 * 0.50 : 0;
+  const g4Total      = g4Guaranteed + g4Holdback;
+
+  const pctReleased = n => Math.round(n / (SAL * 0.33 * 0.50) * 100) + "%";
+
+  return <>
+    <DarkCard style={{ background: "linear-gradient(135deg, #1e1b4b, #0f172a)", padding: "28px 20px" }}>
+      <div style={{ fontSize: "22px", fontWeight: 800, color: "#e0e7ff", marginBottom: "12px" }}>
+        📐 A question about fairness
+      </div>
+      <div style={{ fontSize: "14px", lineHeight: 1.7, color: "#c7d2fe" }}>
+        Two legislators both process <strong style={{ color: "#fbbf24" }}>99 out of 100</strong> bills
+        referred to their committees. One gets paid almost in full. The other gets nothing extra.
+        <br /><br />
+        Same effort. Wildly different results.
+        The difference is the <strong style={{ color: "#4ade80" }}>shape of the math.</strong>
+      </div>
+    </DarkCard>
+
+    <ChalkCard>
+      <Slider
+        label="Bills processed"
+        value={bills}
+        onChange={setBills}
+        min={0} max={100} step={1}
+        color={isCompliant ? "#4ade80" : "#06b6d4"}
+        display={bills + "%  " + (isCompliant ? "✓ Fully compliant" : "✗ Not fully compliant")}
+      />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "8px" }}>
+        {/* Group 3 card */}
+        <div style={{ padding: "14px", background: "rgba(6,182,212,0.12)", borderRadius: "12px", border: "1px solid #06b6d4" }}>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: "#06b6d4", textTransform: "uppercase", marginBottom: "6px" }}>Group 3 Leader</div>
+          <div style={{ fontSize: "11px", color: "#94a3b8", marginBottom: "8px" }}>compliance = group average</div>
+          <div style={{ fontSize: "12px", marginBottom: "3px" }}>Guaranteed: <strong style={{ fontFamily: mono }}>{fmt(g3Guaranteed)}</strong></div>
+          <div style={{ fontSize: "12px", marginBottom: "8px" }}>Holdback: <strong style={{ color: "#06b6d4", fontFamily: mono }}>{fmt(g3Holdback)}</strong></div>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "8px" }}>
+            <div style={{ fontSize: "15px", fontWeight: 800, fontFamily: mono }}>{fmt(g3Total)}</div>
+            <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>{pctReleased(g3Holdback)} of holdback released</div>
+          </div>
+        </div>
+        {/* Group 4 card */}
+        <div style={{ padding: "14px", background: isCompliant ? "rgba(74,222,128,0.12)" : "rgba(239,68,68,0.12)", borderRadius: "12px", border: `1px solid ${isCompliant ? "#4ade80" : "#ef4444"}` }}>
+          <div style={{ fontSize: "11px", fontWeight: 800, color: isCompliant ? "#4ade80" : "#ef4444", textTransform: "uppercase", marginBottom: "6px" }}>Group 4 Chair</div>
+          <div style={{ fontSize: "11px", color: "#94a3b8", marginBottom: "8px" }}>compliance = own committee</div>
+          <div style={{ fontSize: "12px", marginBottom: "3px" }}>Guaranteed: <strong style={{ fontFamily: mono }}>{fmt(g4Guaranteed)}</strong></div>
+          <div style={{ fontSize: "12px", marginBottom: "8px" }}>Holdback: <strong style={{ color: isCompliant ? "#4ade80" : "#ef4444", fontFamily: mono }}>{fmt(g4Holdback)}</strong></div>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "8px" }}>
+            <div style={{ fontSize: "15px", fontWeight: 800, fontFamily: mono }}>{fmt(g4Total)}</div>
+            <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>{isCompliant ? "100%" : "0%"} of holdback released</div>
+          </div>
+        </div>
+      </div>
+    </ChalkCard>
+
+    <Card>
+      <div style={{ fontSize: "14px", fontWeight: 800, marginBottom: "10px" }}>🧮 The Functions Behind Each Group</div>
+      <div style={{ fontSize: "13px", fontWeight: 700, color: "#0891b2", marginBottom: "4px" }}>Group 3 — Continuous Linear</div>
+      <Formula>{"T₃ = Base × 0.33 × (0.50 + 0.50 × C)\nwhere C can be ANY value 0.00 → 1.00\n\nC = 0.75 → 75% of holdback released\nC = 0.40 → 40% released\nEvery % point of compliance = more money"}</Formula>
+      <div style={{ fontSize: "13px", fontWeight: 700, color: "#dc2626", marginBottom: "4px", marginTop: "8px" }}>Group 4 — Piecewise Step</div>
+      <Formula>{"T₄ = Base × 0.33 × 0.50      if C < 1.00\nT₄ = Base × 0.33 × 1.00      if C = 1.00\n\nC_own ∈ { 0, 1 } — only TWO values\n\nC = 0.99 → same as C = 0.00\nOnly C = 1.00 unlocks the holdback"}</Formula>
+    </Card>
+
+    <Card bg="#eff6ff" border="#bfdbfe">
+      <div style={{ fontSize: "14px", fontWeight: 800, color: "#1d4ed8", marginBottom: "8px" }}>📚 What is a piecewise function?</div>
+      <div style={{ fontSize: "13px", color: "#1e3a8a", lineHeight: 1.7 }}>
+        A <strong>piecewise function</strong> uses different formulas for different parts of the input.
+        Group 4 has two pieces:
+        <br />• <strong>Piece 1:</strong> C &lt; 1 → guaranteed pay only
+        <br />• <strong>Piece 2:</strong> C = 1 → guaranteed pay + full holdback
+        <br /><br />
+        Real-world examples: <strong>tax brackets</strong> (different rates at different incomes),
+        <strong> overtime</strong> (regular rate ≤40 hrs, 1.5× above), <strong>shipping tiers</strong> (free above $50).
+        Anywhere a rule <em>changes at a threshold</em>, that's a piecewise function.
+      </div>
+    </Card>
+
+    <Think
+      q="Move the slider to 99%. Group 3 gets 99% of the holdback. Group 4 gets 0%. Is the piecewise function fair?"
+      a={`It enforces stricter individual accountability — but one missing bill hearing, out of fifty, costs the same as missing all fifty. A fairer design might use a per-committee continuous formula: T₄ = Base × 0.33 × (0.50 + 0.50 × C_own), where C_own = bills processed ÷ bills referred. Can you write that formula out?`}
+    />
+
+    <Card bg="#fef2f2" border="#fecaca">
+      <div style={{ fontSize: "13px", fontWeight: 700, color: "#dc2626", marginBottom: "8px" }}>📈 Picture It</div>
+      <svg viewBox="0 0 280 160" style={{ width: "100%", height: "auto" }}>
+        <line x1="35" y1="135" x2="265" y2="135" stroke="#e5e7eb" strokeWidth="1.5"/>
+        <line x1="35" y1="20"  x2="35"  y2="135" stroke="#e5e7eb" strokeWidth="1.5"/>
+        <text x="148" y="155" textAnchor="middle" fontSize="9" fill="#6b7280">Compliance (C)</text>
+        <text x="12"  y="82"  textAnchor="middle" fontSize="9" fill="#6b7280" transform="rotate(-90,12,82)">Holdback</text>
+        <text x="35"  y="149" textAnchor="middle" fontSize="8" fill="#9ca3af">0%</text>
+        <text x="265" y="149" textAnchor="middle" fontSize="8" fill="#9ca3af">100%</text>
+        <text x="30"  y="137" textAnchor="end"    fontSize="8" fill="#9ca3af">0%</text>
+        <text x="30"  y="24"  textAnchor="end"    fontSize="8" fill="#9ca3af">100%</text>
+        {/* Group 3 — diagonal */}
+        <line x1="35" y1="135" x2="265" y2="20" stroke="#06b6d4" strokeWidth="2.5"/>
+        {/* Group 4 — step */}
+        <line x1="35"  y1="135" x2="263" y2="135" stroke="#ef4444" strokeWidth="2.5"/>
+        <line x1="265" y1="135" x2="265" y2="20"  stroke="#ef4444" strokeWidth="2.5"/>
+        <circle cx="265" cy="20"  r="4" fill="#ef4444"/>
+        <circle cx="263" cy="135" r="4" fill="white" stroke="#ef4444" strokeWidth="2"/>
+        {/* Current marker */}
+        {bills < 100 && (
+          <>
+            <line x1={35 + (bills/100)*230} y1="18" x2={35 + (bills/100)*230} y2="135" stroke="#fbbf24" strokeWidth="1.5" strokeDasharray="4,3" opacity="0.8"/>
+            <circle cx={35 + (bills/100)*230} cy={135 - (bills/100)*115} r="5" fill="#06b6d4"/>
+            <circle cx={35 + (bills/100)*230} cy="135" r="5" fill="#ef4444"/>
+          </>
+        )}
+        <text x="148" y="62"  fontSize="10" fill="#06b6d4" fontWeight="bold">Group 3 (linear)</text>
+        <text x="148" y="128" fontSize="10" fill="#ef4444" fontWeight="bold">Group 4 (step)</text>
+      </svg>
+      <div style={{ fontSize: "11px", color: "#9ca3af", textAlign: "center", marginTop: "4px" }}>
+        The open circle at C=100% shows the step function "jumps" — mathematically discontinuous.
+      </div>
+    </Card>
+
+    <Tip>Great discussion prompt: "If you were writing this law, which formula would you use for committee chairs — and why?" Connects algebra to policy design.</Tip>
+  </>;
+}
+
+function S9() {
   const lessons = [
     { icon: "📐", title: "Math reveals truth", text: "The law's words looked fine. Only algebra exposed the structural flaw." },
     { icon: "⚖️", title: "Laws are math problems", text: "Every time a law says \"percentage\" or \"not more than,\" it's creating a formula someone needs to check." },
@@ -377,7 +508,7 @@ function S8() {
   const concepts = [
     "Percentages & Decimals", "Variables", "Linear Functions",
     "Constants", "Inequalities", "Domain Restrictions",
-    "Solving Equations", "Interpreting Results"
+    "Solving Equations", "Interpreting Results", "Piecewise Functions"
   ];
   return <>
     <DarkCard style={{ background: "linear-gradient(135deg, #064e3b, #1e3a5f)", padding: "28px 20px" }}>
@@ -414,7 +545,7 @@ export default function App() {
     if (contentRef.current) contentRef.current.scrollTop = 0;
   }, [cur]);
 
-  const comps = [<S0/>,<S1/>,<S2/>,<S3/>,<S4/>,<S5/>,<S6/>,<S7/>,<S8/>];
+  const comps = [<S0/>,<S1/>,<S2/>,<S3/>,<S4/>,<S5/>,<S6/>,<S7/>,<S8/>,<S9/>];
 
   return (
     <div style={{ maxWidth: "480px", margin: "0 auto", minHeight: "100vh", display: "flex", flexDirection: "column", background: "#fafaf9", fontFamily: "'Nunito', 'Segoe UI', sans-serif" }}>
@@ -460,7 +591,7 @@ export default function App() {
           flex: 1, padding: "14px", borderRadius: "12px", border: "none", cursor: cur === STEPS.length - 1 ? "default" : "pointer",
           background: cur === STEPS.length - 1 ? "#f3f4f6" : "#4ade80", color: cur === STEPS.length - 1 ? "#9ca3af" : "#000",
           fontSize: "15px", fontWeight: 700
-        }}>{cur === 6 ? "The Reveal →" : cur === STEPS.length - 1 ? "Done ✓" : "Next →"}</button>
+        }}>{cur === 6 ? "The Reveal →" : cur === 7 ? "Two Kinds →" : cur === STEPS.length - 1 ? "Done ✓" : "Next →"}</button>
       </div>
     </div>
   );
